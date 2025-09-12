@@ -7,7 +7,7 @@ def main():
     root.geometry("300x150")  # Set window size
 
     # Create a label widget
-    label = tk.Label(root, text="Hello, World!", font=("Arial", 16))
+    label = tk.Label(root, text="Hello, World!12,", font=("Arial", 16))
     label.pack(pady=40)  # Add padding around the label
 
     # Run the application loop
