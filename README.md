@@ -1,3 +1,10 @@
+# Software Versions
+- Python 3.13 (64-bit)
+- PyCharm 2025.2.1.1
+- git version 2.51.0.windows.1
+
+
+
 # Setup-Anleitung für Git & PyCharm
 
 ## 1. PyCharm installieren (Entwickler)
@@ -56,3 +63,4 @@ Lade Python von [python.org](https://www.python.org/downloads/) herunter und ins
 - `git clone <URL>` – kopiert ein bestehendes Repository auf den lokalen Rechner.  
 - `git pull` – holt Änderungen vom Remote-Repository und integriert sie lokal.  
 - `git push` – überträgt lokale Commits ins Remote-Repository.  
+
