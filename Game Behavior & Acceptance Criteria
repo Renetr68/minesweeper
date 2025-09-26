@@ -1,11 +1,11 @@
 # Minesweeper – Initial Game Behavior & Acceptance Criteria
 
-## 🎯 Sprint Goal
+# Sprint Goal
 Deliver a minimal playable version of Minesweeper with basic game mechanics.
 
 ---
 
-## 📝 User Stories & Acceptance Criteria
+# User Stories & Acceptance Criteria
 
 ### 1. Board Generation
 **User Story:**  
@@ -54,7 +54,7 @@ As a player, I want to know if I have won or lost so that I can finish the game.
 
 ---
 
-## ✅ Definition of Done
+## Definition of Done
 - Features are implemented and integrated.  
 - All acceptance criteria are met.  
 - Code reviewed and tested (unit tests for board generation & mine placement).  
