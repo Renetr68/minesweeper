@@ -46,7 +46,7 @@ class Minesweeper(tk.Frame):
                                     font=("Segoe UI", 11, "bold"))
         self.score_label.pack(side="right")
 
-        self.timer_label = tk.Label(self.topbar, text="Zeit: 0s", fg="white", bg="#2b2d31",
+        self.timer_label = tk.Label(self.topbar, text="Zeit: 0s", fg="white", bg="#2b1d31",
                                     font=("Segoe UI", 11, "bold"))
         self.timer_label.pack(side="right", padx=(0, 16))
 
