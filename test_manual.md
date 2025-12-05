@@ -1,33 +1,42 @@
-# Test-Manual – Projekt *Minesweeper*
+# Test-Manual – Projekt *Minesweeper* (Tkinter + Pytest)
 
 ## 1. Allgemeine Informationen
 
 - **Projektname:** Minesweeper (Tkinter)
 - **Lehrveranstaltung:** Software Engineering
-- **Version des Test-Manuals:** 1.1
+- **Version des Test-Manuals:** 2.0
 - **Datum:** 02.12.2025
 - **Tester/in:** Rene Tresek
 
 **Ziel dieses Dokuments:**  
-Dieses Test-Manual beschreibt Vorgehensweise, Methoden und konkrete Testfälle zur Qualitätssicherung des Softwareprojekts *Minesweeper*. Es orientiert sich direkt am vorhandenen Python/Tkinter-Code und den implementierten Unit-Tests in `test_minesweeper.py`.
+Dieses Test-Manual beschreibt die Vorgehensweise, Methoden und konkreten Testfälle zur Qualitätssicherung des Softwareprojekts *Minesweeper*.  
+Es basiert **direkt auf der finalen Minesweeper-Implementierung in `main.py`** und dem **pytest-Testpaket `test_minesweeper.py`**, welches Dummy-Widgets nutzt, um GUI-Interaktionen ohne echtes Fenster zu testen.
 
 ---
 
 ## 2. Testobjekt
 
-Testobjekt ist die Python-Anwendung **„Minesweeper“**, implementiert als `Minesweeper`-Klasse in `minesweeper.py`.
+Das Testobjekt ist die Python-Anwendung **„Minesweeper“**, umgesetzt als Klasse `Minesweeper` in `main.py`.
 
-### Wichtige Funktionen & Datenstrukturen
+### Wichtige Spiellogik-Komponenten
 
-- Spielfeldgröße und Minenanzahl:
-  - `self.rows`, `self.cols`, `self.mines_total`
-- Zustände pro Feld:
-  - `self.is_mine[r][c]` – Mine ja/nein
-  - `self.revealed[r][c]` – Feld aufgedeckt ja/nein
-  - `self.flagged[r][c]` – Flagge gesetzt ja/nein
-  - `self.neigh[r][c]` – Anzahl benachbarter Minen
+- Spielfeldkonfiguration:
+  - `rows`, `cols`, `mines_total`
+- Board-Zustände (2D-Listen):
+  - `is_mine[r][c]` – Mine ja/nein  
+  - `revealed[r][c]` – Feld aufgedeckt  
+  - `flagged[r][c]` – Flagge gesetzt  
+  - `adjacent_mines[r][c]` – Anzahl benachbarter Minen
+- GUI-Elemente (für Tests ersetzt durch Dummy-Klassen):
+  - `buttons[(r, c)]`
+  - `score_label`
+  - `timer_label`
 - Zentrale Methoden:
-  - `__init__()`, `_reset_board()`, `_place_mines()`, `_neighbors()`, `_check_win()`, `_game_won()`, `_game_lost()`
+  - `_place_mines()`
+  - `_compute_adjacent_mines()`
+  - `_ensure_first_click_safe()`
+  - `_reveal_safe_or_mine()`
+  - `_check_win()`
 
 ---
 
@@ -36,18 +45,22 @@ Testobjekt ist die Python-Anwendung **„Minesweeper“**, implementiert als `Mi
 ### In-Scope
 
 - **Spiellogik:**
-  - Initialisierung des Spielfelds (`_reset_board`)
-  - Platzierung der Minen (`_place_mines`)
-  - Bestimmung von Nachbarfeldern (`_neighbors`)
-  - Erkennung des Spielsieges (`_check_win` → `_game_won`)
-- **UI-Nähe (indirekt):**
-  - Aufruf von `messagebox.showinfo` bei gewonnenem Spiel (wird in Unit-Tests gemockt)
+  - Minenverteilung
+  - Berechnung von Nachbarzahlen
+  - Flood-Fill-Aufdecken sicherer Felder
+  - Reaktion beim Klicken auf eine Mine
+  - Erkennen eines gewonnenen Spiels
 
-### Out-of-Scope (für die aktuellen Unit-Tests)
+- **UI-abhängige Logik (über Dummy-Klassen getestet):**
+  - Zugriff auf Buttons via `buttons[(r,c)].config()`
+  - Aktualisierung von Labels (`score_label`, `timer_label`)
 
-- Vollständige GUI-Darstellung (Farben, Fonts, Layout)
-- Komplette Spielinteraktion via Maus (Klick-Events) – wird eher in manuellen Systemtests geprüft
-- Timer-Anzeige im Detail
+### Out-of-Scope
+
+- Grafische Darstellung (Farben, Fonts, Layout)
+- Animationen oder Sound
+- Nutzerinteraktion über echte Mausklicks
+- Timer-Funktionalität im Detail
 
 ---
 
@@ -55,121 +68,157 @@ Testobjekt ist die Python-Anwendung **„Minesweeper“**, implementiert als `Mi
 
 ### 4.1 Testebenen
 
-- **Unit-Tests**  
-  Über `unittest` in `test_minesweeper.py`.  
-  Fokus auf:
-  - Korrekte Nachbarlogik (`_neighbors`)
-  - Konsistente Board-Initialisierung (`_reset_board`)
-  - Richtiges Platzieren von Minen (`_place_mines`)
-  - Erkennung des Spielgewinns (`_check_win`)
+- **Unit-Tests (pytest)**
+  - Prüfen interne Logik unabhängig von der GUI.
+  - Verwendung von Dummy-Widgets zur Entkopplung von Tkinter.
 
-- **Systemtests (manuell)**  
-  Durch Anwenderinteraktion (Klicken, Flaggen setzen, Spiele gewinnen/verlieren).
+- **Systemtests (manuell)**
+  - echtes Spielen über die Benutzeroberfläche
+  - Tests von UX, Layout, Buttons, Spielfluss.
 
 ### 4.2 Testarten
 
-- **Funktionale Tests:**  
-  Prüfen, ob sich die internen Datenstrukturen gemäß den Spielregeln verhalten.
-- **Negativtests:**  
-  Z. B. Randfälle für `_neighbors` (Ecken, Ränder).
-- **Regressionstests:**  
-  Die Unit-Tests können regelmäßig ausgeführt werden, um sicherzustellen, dass Änderungen keine Fehler einführen.
+- **Funktionale Tests**  
+  Stellen sicher, dass die Spiellogik den Minesweeper-Regeln entspricht.
+
+- **Negativtests**  
+  Testen Verhalten in Randfällen (z. B. Klick auf bereits aufgedecktes Feld).
+
+- **Regressionstests**  
+  Durch erneutes Ausführen aller Pytest-Testfälle nach Codeänderungen.
 
 ---
 
 ## 5. Testumgebung
 
 - **Hardware:** Standard-PC/Laptop
-- **Betriebssystem:** Windows / Linux / macOS
-- **Programmiersprache:** Python 3.13
+- **Betriebssystem:** Windows 10/11, macOS, Linux
+- **Programmiersprache:** Python 3.11+
 - **Bibliotheken:**
-  - `tkinter` (Standard)
-  - `unittest`, `unittest.mock` (Standardbibliothek)
-- **Ausführung:**
-  - Direkt mit `python -m unittest`
-  - oder über PyCharm (Test-Runner)
+  - `tkinter` (GUI)
+  - `pytest` (Test-Framework)
+- **Tools:**
+  - PyCharm Community / Professional
+  - Windows Terminal / PowerShell
 
 ---
 
 ## 6. Konkrete Unit-Testfälle
 
-### UT-001 – `_neighbors` für mittlere Zelle
+Die Testfälle entsprechen **1:1** den implementierten Tests in `test_minesweeper.py`.
 
-- **Ziel:** Sicherstellen, dass eine Zelle in der Mitte des Spielfelds alle 8 Nachbarn korrekt liefert.
-- **Implementierung:** `test_neighbors_center_cell`
-- **Vorbedingung:** 5x5-Board.
-- **Erwartetes Ergebnis:** 8 Nachbarn, inkl. Diagonalen, exklusive der Zelle selbst.
+---
 
-### UT-002 – `_neighbors` für Ecke
+### **UT-001 – Korrektes Platzieren von Minen**
 
-- **Ziel:** Sicherstellen, dass eine Ecke (0,0) genau 3 Nachbarn hat.
-- **Implementierung:** `test_neighbors_corner_cell`
-- **Erwartetes Ergebnis:** Nur gültige Koordinaten innerhalb des Boards, Anzahl = 3.
+- **Methode:** `_place_mines`
+- **Fixture:** `_setup_board(5,5,5)`
+- **Test:** `test_place_mines_correct_count`
+- **Ziel:** Anzahl gesetzter Minen entspricht `mines_total`.
+- **Erwartetes Ergebnis:** `mine_count == 5`
 
-### UT-003 – `_reset_board` setzt Zustand zurück
+---
 
-- **Ziel:** Nach `_reset_board(keep_ui=True)` sollen alle Felder:
-  - keine Mine sein
-  - nicht aufgedeckt sein
-  - nicht geflaggt sein
-- **Implementierung:** `test_reset_board_initializes_state`
+### **UT-002 – Berechnung von Nachbarminen (3×3 Muster)**
+
+- **Methode:** `_compute_adjacent_mines`
+- **Test:** `test_compute_adjacent_mines_known_pattern`
+- **Board:**  
+. M .
+M . M
+. . .
+
+- **Erwartete Matrix:**
+2 -1 2
+-1 3 -1
+1 2 1
+
+---
+
+### **UT-003 – First-Click-Safe**
+
+- **Methode:** `_ensure_first_click_safe`
+- **Test:** `test_first_click_safe_moves_mine`
+- **Ziel:**  
+- Das erste Feld darf keine Mine enthalten.
+- Gesamtzahl der Minen bleibt gleich.
+
+---
+
+### **UT-004 – Flood-Fill Funktion (0-er Feld aufdecken)**
+
+- **Methode:** `_reveal_safe_or_mine`
+- **Test:** `test_reveal_safe_flood_fill`
+- **Setup:**  
+- Mine nur in (0,2)
+- Feld (2,0) hat 0 Nachbarminen
+- **Erwartetes Feld nach Aufdecken (`revealed`):**
+
+T T F
+T T T
+T T T
+
+
+---
+
+### **UT-005 – Klick auf Mine löst Game Over aus**
+
+- **Methode:** `_reveal_safe_or_mine`
+- **Test:** `test_reveal_on_mine_sets_game_over`
 - **Erwartetes Ergebnis:**  
-  - `is_mine`, `revealed`, `flagged` bestehen nur aus `False`
-  - `game_over = False`, `started = False`
-  - `flags_left = mines_total`
+- `game_over == True`  
+- getroffenes Feld wird `revealed == True`
 
-### UT-004 – `_place_mines` setzt korrekte Minen und respektiert ersten Klick
+---
 
-- **Ziel:**
-  - Minenanzahl entspricht `mines_total`
-  - Erste angeklickte Zelle und ihre Nachbarn sind keine Minen
-- **Implementierung:** `test_place_mines_respects_first_click_and_neighbors`
-- **Besonderheit:** Setzt via `random.seed(42)` einen festen Zufalls-Seed.
+### **UT-006 – Gewinnbedingung**
+
+- **Methode:** `_check_win`
+- **Test:** `test_check_win_sets_game_over`
+- **Setup:**  
+- 2×2 Board, 1 Mine  
+- Alle sicheren Felder sind `revealed == True`
 - **Erwartetes Ergebnis:**  
-  - Anzahl gesetzter Minen = `mines_total`  
-  - (first_r, first_c) und alle `_neighbors(first_r, first_c)` sind `False` in `is_mine`.
-
-### UT-005 – `_check_win` erkennt gewonnenes Spiel
-
-- **Ziel:** Wenn alle Nicht-Minen-Felder aufgedeckt sind, muss das Spiel als gewonnen markiert werden.
-- **Implementierung:** `test_check_win_sets_game_over_when_all_safe_revealed`
-- **Vorbedingung:**  
-  - 3x3-Board, 1 Mine (z. B. in der Mitte)  
-  - Alle Nicht-Minen-Felder sind in `revealed` = `True`
-- **Erwartetes Ergebnis:**  
-  - `game_over = True`  
-  - `messagebox.showinfo()` wird genau einmal aufgerufen (gemockt).
+- `game_over == True`
 
 ---
 
 ## 7. Fehler- und Änderungsmanagement
 
-- **Fehlererfassung:**  
-  - Kurzbeschreibung  
-  - Testfall-ID (z. B. UT-004)  
-  - Erwartetes vs. tatsächliches Verhalten  
-  - Schweregrad (kritisch, mittel, gering)  
-  - Status (neu, in Bearbeitung, behoben, geschlossen)
+### Erfassung eines Fehlers
 
-- **Änderungen:**  
-  - Anpassung des Codes in `minesweeper.py`  
-  - Erneuter Lauf aller Unit-Tests  
-  - Ggf. Erweiterung der Testfälle bei neuen Features
+Jeder Fehler wird dokumentiert mit:
+
+1. **Testfall-ID** (z. B. UT-004)
+2. **Kurzbeschreibung**
+3. **Erwartetes Verhalten**
+4. **Tatsächliches Verhalten**
+5. **Schweregrad**
+6. **Status**
+
+### Vorgehen bei Änderungen
+
+1. Code in `main.py` anpassen  
+2. `pytest` erneut ausführen  
+3. Bei neuen Features → neue Tests erstellen  
+4. Dieses Manual aktualisieren
 
 ---
 
-## 8. Abnahmekriterien (Definition of Done für Tests)
+## 8. Definition of Done (DoD) für Tests
 
-Eine User Story / ein Inkrement gilt als fertig, wenn:
+Ein Increment gilt als fertig, wenn:
 
-1. Alle relevanten Unit-Tests in `test_minesweeper.py` **grün** sind  
-2. Keine offenen kritischen Fehler bestehen  
-3. Notwendige Systemtests (manuell) erfolgreich durchgeführt wurden  
-4. Dieses Test-Manual und die Testfälle bei Änderungen aktualisiert wurden
+- Alle Pytest-Testfälle **grün** sind  
+- Keine kritischen Fehler offen sind  
+- Manuelle Systemtests erfolgreich  
+- Dokumentation (inkl. Test-Manual) aktualisiert wurde  
 
 ---
 
 ## 9. Testdokumentation
 
-- `TEST_MANUAL.md` (dieses Dokument)  
-- `test_minesweeper.py` (implementierte Unit-Tests)  
+- **TEST_MANUAL.md** – dieses Dokument  
+- **test_minesweeper.py** – automatisierte pytest-Tests  
+- **main.py** – getestete Minesweeper-Implementierung  
+
